@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEAFS — Store Visit Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #FFD700;
+    --gold-dim: rgba(255,215,0,0.15);
+    --gold-border: rgba(255,215,0,0.25);
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface-2: #18181f;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f0f0;
+    --text-muted: rgba(255,255,255,0.4);
+    --purple: #7C3AED;
+    --purple-dim: rgba(124,58,237,0.15);
+    --success: #10B981;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .neafs-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 5px;
+    color: #fff;
+  }
+
+  .header-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+  }
+
+  .header-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .header-badge {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #FFA500);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* Container */
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Hero strip */
+  .hero-strip {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-strip::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(255,215,0,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-strip h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 3px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .hero-strip h1 span { color: var(--gold); }
+
+  .hero-strip p {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* Form */
+  .form-body {
+    padding: 32px 0;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 32px;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .section:nth-child(1) { animation-delay: 0.1s; }
+  .section:nth-child(2) { animation-delay: 0.2s; }
+  .section:nth-child(3) { animation-delay: 0.3s; }
+  .section:nth-child(4) { animation-delay: 0.4s; }
+  .section:nth-child(5) { animation-delay: 0.5s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--gold);
+    opacity: 0.6;
+    min-width: 28px;
+  }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* Fields */
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .field-grid.single { grid-template-columns: 1fr; }
+  .field-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field.span-2 { grid-column: span 2; }
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  label .required {
+    color: var(--gold);
+    margin-left: 2px;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  select,
+  textarea {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  input[type="date"] {
+    color-scheme: dark;
+  }
+
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  select option {
+    background: #1a1a24;
+    color: #fff;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.6;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: rgba(255,215,0,0.4);
+    background: #1a1a22;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: rgba(255,255,255,0.2);
+  }
+
+  /* Checkbox group */
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .checkbox-item {
+    position: relative;
+  }
+
+  .checkbox-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .checkbox-item label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .checkbox-item label::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    background: transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .checkbox-item input:checked + label {
+    background: var(--gold-dim);
+    border-color: var(--gold-border);
+    color: var(--gold);
+  }
+
+  .checkbox-item input:checked + label::before {
+    background: var(--gold);
+    border-color: var(--gold);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23000' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* Rating */
+  .rating-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .rating-item {
+    position: relative;
+    flex: 1;
+  }
+
+  .rating-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .rating-item label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-muted);
+  }
+
+  .rating-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    line-height: 1;
+    color: rgba(255,255,255,0.3);
+    transition: color 0.2s;
+  }
+
+  .rating-label-text {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .rating-item input:checked + label {
+    background: var(--gold-dim);
+    border-color: var(--gold-border);
+  }
+
+  .rating-item input:checked + label .rating-num { color: var(--gold); }
+  .rating-item input:checked + label .rating-label-text { color: var(--gold); }
+
+  /* Yes/No toggle */
+  .toggle-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .toggle-item {
+    position: relative;
+    flex: 1;
+  }
+
+  .toggle-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-item label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .toggle-item input:checked + label {
+    background: var(--gold-dim);
+    border-color: var(--gold-border);
+    color: var(--gold);
+  }
+
+  .toggle-item.yes input:checked + label {
+    background: rgba(16,185,129,0.1);
+    border-color: rgba(16,185,129,0.3);
+    color: #10B981;
+  }
+
+  .toggle-item.no input:checked + label {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.3);
+    color: #EF4444;
+  }
+
+  /* Submit */
+  .submit-section {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeUp 0.5s ease 0.6s forwards;
+  }
+
+  .submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold) 0%, #FFA500 100%);
+    border: none;
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: #000;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(255,215,0,0.3);
+  }
+
+  .submit-btn:active { transform: translateY(0); }
+
+  .submit-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .submit-disclaimer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 80px 24px;
+  }
+
+  .success-icon {
+    width: 72px;
+    height: 72px;
+    background: rgba(16,185,129,0.1);
+    border: 2px solid rgba(16,185,129,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+  }
+
+  .success-icon svg {
+    width: 32px;
+    height: 32px;
+    color: #10B981;
+  }
+
+  .success-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 3px;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .success-title span { color: var(--gold); }
+
+  .success-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 360px;
+    margin: 0 auto 32px;
+  }
+
+  .new-report-btn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .new-report-btn:hover {
+    border-color: var(--gold-border);
+    color: var(--gold);
+  }
+
+  /* Error state */
+  .field-error {
+    font-size: 11px;
+    color: #EF4444;
+    display: none;
+  }
+
+  .field.has-error input,
+  .field.has-error select,
+  .field.field.has-error textarea {
+    border-color: rgba(239,68,68,0.5);
+  }
+
+  .field.has-error .field-error { display: block; }
+
+  @media (max-width: 480px) {
+    .field-grid { grid-template-columns: 1fr; }
+    .field.span-2 { grid-column: span 1; }
+    .field-grid.three { grid-template-columns: 1fr; }
+    .header-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="neafs-logo">NEAFS</div>
+    <div class="header-divider"></div>
+    <div class="header-title">Store Visit Report</div>
+  </div>
+  <div class="header-badge">BDM Field</div>
+</div>
+
+<!-- Progress -->
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<!-- Manager Gate -->
+<div id="managerGate" style="background:#111118;border-bottom:1px solid rgba(255,255,255,0.07);padding:32px 24px;text-align:center;">
+  <div style="max-width:480px;margin:0 auto;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(255,215,0,0.7);text-transform:uppercase;margin-bottom:12px;">Before You Begin</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#fff;margin-bottom:8px;">WAS THE MANAGER <span style="color:#FFD700;">PRESENT?</span></div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px;">Only complete a report if the store owner or manager was available during your visit.</div>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button onclick="managerYes()" style="flex:1;max-width:180px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#10B981;cursor:pointer;transition:all 0.2s;">Yes</button>
+      <button onclick="showNoManagerForm()" style="flex:1;max-width:180px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#EF4444;cursor:pointer;transition:all 0.2s;">No</button>
+    </div>
+  </div>
+</div>
+
+<!-- No Manager Message -->
+<div id="noManagerMsg" style="display:none;text-align:center;padding:40px 24px;max-width:480px;margin:0 auto;">
+  <div style="width:64px;height:64px;background:rgba(239,68,68,0.1);border:2px solid rgba(239,68,68,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </div>
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:#fff;margin-bottom:10px;">NO REPORT <span style="color:#EF4444;">NEEDED</span></div>
+  <div style="font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7;margin-bottom:24px;">Manager was not present. Just log your name and store below so the visit is recorded.</div>
+  <div style="text-align:left;margin-bottom:16px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;">Your Name</div>
+    <input id="quick-bdm-name" type="text" placeholder="Your full name" style="width:100%;background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+  </div>
+  <div style="text-align:left;margin-bottom:16px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;">Store Name</div>
+    <input id="quick-store-name" type="text" placeholder="Store name" style="width:100%;background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+  </div>
+  <div style="text-align:left;margin-bottom:24px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;">Postcode</div>
+    <input id="quick-postcode" type="text" placeholder="Store postcode" style="width:100%;background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+  </div>
+  <div id="noManagerFormArea">
+    <div style="display:flex;gap:12px;">
+      <button onclick="resetGate()" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 28px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;">Back</button>
+      <button onclick="managerNo()" style="flex:1;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px 28px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#EF4444;cursor:pointer;">Log Visit</button>
+    </div>
+  </div>
+
+  <!-- Confirmation message shown after Log Visit -->
+  <div id="noManagerConfirm" style="display:none;text-align:center;padding:20px 0;">
+    <div style="width:64px;height:64px;background:rgba(16,185,129,0.1);border:2px solid rgba(16,185,129,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;color:#fff;margin-bottom:8px;">VISIT <span style="color:#10B981;">LOGGED</span></div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7;margin-bottom:24px;">Store visit recorded. No manager present. Move on to your next store.</div>
+    <button onclick="resetGate()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 28px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;">New Visit</button>
+  </div>
+</div>
+
+<!-- Main Form (hidden until manager confirmed) -->
+<div id="mainForm" style="display:none;">
+
+<!-- Hero -->
+<div class="hero-strip">
+  <h1>STORE VISIT <span>REPORT</span></h1>
+  <p>Complete after every store visit &bull; Takes under 2 minutes</p>
+</div>
+
+<div class="container">
+  <div class="form-body">
+
+    <form id="visitForm" novalidate>
+
+      <!-- SECTION 1: STORE INFO -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-num">01</div>
+          <div class="section-title">Store Information</div>
+        </div>
+        <div class="field-grid">
+          <div class="field" id="field-bdm">
+            <label>BDM Name <span class="required">*</span></label>
+            <input type="text" name="bdm_name" placeholder="Your full name" required>
+            <span class="field-error">Required</span>
+          </div>
+          <div class="field" id="field-email">
+            <label>Your Email Address <span style="color:rgba(255,255,255,0.3);font-size:10px;">(optional — get a copy of this report)</span></label>
+            <input type="text" name="bdm_email" placeholder="e.g. rory@neafs.com">
+          </div>
+
+          <div class="field" id="field-store">
+            <label>Store Name <span class="required">*</span></label>
+            <input type="text" name="store_name" placeholder="e.g. Hamilton Local" required>
+            <span class="field-error">Required</span>
+          </div>
+          <div class="field" id="field-postcode">
+            <label>Postcode <span class="required">*</span></label>
+            <input type="text" name="postcode" placeholder="e.g. SW1A 1AA" required>
+            <span class="field-error">Required</span>
+          </div>
+          <div class="field span-2" id="field-owner">
+            <label>Owner / Manager Name</label>
+            <input type="text" name="owner_name" placeholder="Store owner or manager name">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: VISIT OUTCOME -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-num">02</div>
+          <div class="section-title">Visit Outcome</div>
+        </div>
+        <div class="field-grid single" style="gap:16px;">
+
+
+
+          <div class="field">
+            <label>Products currently stocked in store</label>
+            <div class="checkbox-group">
+              <div class="checkbox-item">
+                <input type="checkbox" name="stocked[]" id="s_uno" value="UNO+">
+                <label for="s_uno">UNO+</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" name="stocked[]" id="s_pouches" value="Pouches">
+                <label for="s_pouches">Pouches</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" name="stocked[]" id="s_slims" value="Slims">
+                <label for="s_slims">Slims</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" name="stocked[]" id="s_teox" value="TEO-X">
+                <label for="s_teox">TEO-X</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" name="stocked[]" id="s_elonex" value="Elonex Screen">
+                <label for="s_elonex">Elonex Screen</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" name="stocked[]" id="s_elonex_display" value="Elonex Screen On Display">
+                <label for="s_elonex_display">Elonex Screen On Display</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" name="stocked[]" id="s_none" value="None">
+                <label for="s_none">None</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>CDU present in store?</label>
+            <div class="toggle-group">
+              <div class="toggle-item yes">
+                <input type="radio" name="cdu_present" id="cdu_yes" value="Yes">
+                <label for="cdu_yes">Yes</label>
+              </div>
+              <div class="toggle-item no">
+                <input type="radio" name="cdu_present" id="cdu_no" value="No">
+                <label for="cdu_no">No</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Contracts signed this visit?</label>
+            <div class="toggle-group">
+              <div class="toggle-item yes">
+                <input type="radio" name="contracts_signed" id="contract_yes" value="1">
+                <label for="contract_yes">Yes</label>
+              </div>
+              <div class="toggle-item no">
+                <input type="radio" name="contracts_signed" id="contract_no" value="0">
+                <label for="contract_no">No</label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECTION 3: INTEREST & OPPORTUNITIES -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-num">03</div>
+          <div class="section-title">Interest &amp; Opportunities</div>
+        </div>
+        <div class="field-grid single" style="gap:16px;">
+
+          <div class="field">
+            <label>Interested in TEO-X? <span class="required">*</span></label>
+            <div class="toggle-group">
+              <div class="toggle-item yes">
+                <input type="radio" name="teox_interest" id="teox_yes" value="Yes" required>
+                <label for="teox_yes">Yes</label>
+              </div>
+              <div class="toggle-item no">
+                <input type="radio" name="teox_interest" id="teox_no" value="No">
+                <label for="teox_no">No</label>
+              </div>
+              <div class="toggle-item">
+                <input type="radio" name="teox_interest" id="teox_already" value="Already stocked">
+                <label for="teox_already">Already stocked</label>
+              </div>
+              <div class="toggle-item">
+                <input type="radio" name="teox_interest" id="teox_followup" value="Follow up needed">
+                <label for="teox_followup">Follow up needed</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Interested in other NEAFS products? (UNO+, Pouches, Slims) <span class="required">*</span></label>
+            <div class="toggle-group">
+              <div class="toggle-item yes">
+                <input type="radio" name="other_interest" id="other_yes" value="Yes" required>
+                <label for="other_yes">Yes</label>
+              </div>
+              <div class="toggle-item no">
+                <input type="radio" name="other_interest" id="other_no" value="No">
+                <label for="other_no">No</label>
+              </div>
+              <div class="toggle-item">
+                <input type="radio" name="other_interest" id="other_already" value="Already stocked">
+                <label for="other_already">Already stocked</label>
+              </div>
+              <div class="toggle-item">
+                <input type="radio" name="other_interest" id="other_followup" value="Follow up needed">
+                <label for="other_followup">Follow up needed</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Elonex screen status</label>
+            <select name="elonex_status">
+              <option value="">Select status</option>
+              <option value="Already installed">Already installed</option>
+              <option value="Interested — contract signed">Interested — contract signed</option>
+              <option value="Interested — follow up needed">Interested — follow up needed</option>
+              <option value="Not interested">Not interested</option>
+              <option value="Not discussed">Not discussed</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECTION 4: SALES -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-num">04</div>
+          <div class="section-title">Sales</div>
+        </div>
+        <div class="field-grid single" style="gap:16px;">
+          <div class="field">
+            <label>Any sales made this visit?</label>
+            <div class="toggle-group">
+              <div class="toggle-item yes">
+                <input type="radio" name="sales_made" id="sales_yes" value="Yes" onclick="document.getElementById('salesAmountField').style.display='block'">
+                <label for="sales_yes">Yes</label>
+              </div>
+              <div class="toggle-item no">
+                <input type="radio" name="sales_made" id="sales_no" value="No" onclick="document.getElementById('salesAmountField').style.display='none'">
+                <label for="sales_no">No</label>
+              </div>
+            </div>
+          </div>
+          <div class="field" id="salesAmountField" style="display:none;">
+            <label>Sales Amount (£)</label>
+            <input type="text" name="sales_amount" placeholder="e.g. £45.00" style="font-size:18px;font-weight:700;">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 5: FOLLOW UP -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-num">05</div>
+          <div class="section-title">Follow Up</div>
+        </div>
+        <div class="field-grid single" style="gap:16px;">
+
+          <div class="field">
+            <label>Follow up required?</label>
+            <div class="toggle-group">
+              <div class="toggle-item yes">
+                <input type="radio" name="followup_required" id="fu_yes" value="Yes">
+                <label for="fu_yes">Yes</label>
+              </div>
+              <div class="toggle-item no">
+                <input type="radio" name="followup_required" id="fu_no" value="No">
+                <label for="fu_no">No</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Follow up notes / Issues raised by owner</label>
+            <textarea name="followup_notes" placeholder="Any issues, objections, requests or follow up actions..."></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECTION 6: OVERALL -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-num">06</div>
+          <div class="section-title">Overall Visit Rating</div>
+        </div>
+        <div class="rating-group">
+          <div class="rating-item">
+            <input type="radio" name="visit_rating" id="r1" value="1">
+            <label for="r1">
+              <span class="rating-num">1</span>
+              <span class="rating-label-text">Poor</span>
+            </label>
+          </div>
+          <div class="rating-item">
+            <input type="radio" name="visit_rating" id="r2" value="2">
+            <label for="r2">
+              <span class="rating-num">2</span>
+              <span class="rating-label-text">Fair</span>
+            </label>
+          </div>
+          <div class="rating-item">
+            <input type="radio" name="visit_rating" id="r3" value="3">
+            <label for="r3">
+              <span class="rating-num">3</span>
+              <span class="rating-label-text">Good</span>
+            </label>
+          </div>
+          <div class="rating-item">
+            <input type="radio" name="visit_rating" id="r4" value="4">
+            <label for="r4">
+              <span class="rating-num">4</span>
+              <span class="rating-label-text">Great</span>
+            </label>
+          </div>
+          <div class="rating-item">
+            <input type="radio" name="visit_rating" id="r5" value="5">
+            <label for="r5">
+              <span class="rating-num">5</span>
+              <span class="rating-label-text">Excellent</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-section">
+        <button type="submit" class="submit-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          SUBMIT VISIT REPORT
+        </button>
+        <p class="submit-disclaimer">
+          Report will be saved to NEAFS Google Sheets &bull; Required fields marked <span style="color:var(--gold)">*</span>
+        </p>
+      </div>
+
+    </form>
+
+    <!-- Success Screen -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="success-title">REPORT <span>SENT</span></div>
+      <p class="success-text">Your store visit report has been submitted and saved to the NEAFS Google Sheet automatically.</p>
+      <button class="new-report-btn" onclick="resetForm()">Submit Another Report</button>
+    </div>
+
+  </div>
+</div>
+</div><!-- end mainForm -->
+
+<script>
+  // Manager gate functions
+  function showNoManagerForm() {
+    document.getElementById('managerGate').style.display = 'none';
+    document.getElementById('noManagerMsg').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  function managerYes() {
+    document.getElementById('managerGate').style.display = 'none';
+    document.getElementById('noManagerMsg').style.display = 'none';
+    document.getElementById('mainForm').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  function managerNo() {
+    document.getElementById('managerGate').style.display = 'none';
+    document.getElementById('mainForm').style.display = 'none';
+    document.getElementById('noManagerMsg').style.display = 'block';
+    window.scrollTo(0, 0);
+    // Submit minimal record to sheet showing store was visited but no manager present
+    var bdmName = document.getElementById('quick-bdm-name').value.trim();
+    var storeName = document.getElementById('quick-store-name').value.trim();
+    var postcode = document.getElementById('quick-postcode').value.trim();
+    if (bdmName && storeName) {
+      var payload = {
+        bdm_name: bdmName,
+        bdm_email: '',
+        store_name: storeName,
+        postcode: postcode,
+        owner_name: '',
+        stocked: '',
+        cdu_present: '',
+        contracts_signed: '0',
+        teox_interest: '',
+        other_interest: '',
+        elonex_status: '',
+        sales_made: 'No',
+        sales_amount: '',
+        followup_required: 'Yes - No manager present',
+        followup_notes: 'Store visited but manager not present',
+        visit_rating: ''
+      };
+      var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYZhNxmAd6mkLjSqTACzIGOHQgMdEgPcr0jcvI0YRr4ef9Lelgr298f1As3ZEd7g9I/exec';
+      var iframe = document.createElement('iframe');
+      iframe.name = 'no_manager_iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      var iframeForm = document.createElement('form');
+      iframeForm.method = 'POST';
+      iframeForm.action = SCRIPT_URL;
+      iframeForm.target = 'no_manager_iframe';
+      iframeForm.style.display = 'none';
+      iframeForm.enctype = 'application/x-www-form-urlencoded';
+      var dataInput = document.createElement('input');
+      dataInput.type = 'hidden';
+      dataInput.name = 'payload';
+      dataInput.value = JSON.stringify(payload);
+      iframeForm.appendChild(dataInput);
+      document.body.appendChild(iframeForm);
+      iframeForm.submit();
+      // Show confirmation
+      document.getElementById('noManagerFormArea').style.display = 'none';
+      document.getElementById('noManagerConfirm').style.display = 'block';
+      setTimeout(function() {
+        if (document.body.contains(iframeForm)) document.body.removeChild(iframeForm);
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      }, 3000);
+    } else {
+      // Show confirmation anyway even if fields empty
+      document.getElementById('noManagerFormArea').style.display = 'none';
+      document.getElementById('noManagerConfirm').style.display = 'block';
+    }
+  }
+
+  function resetGate() {
+    document.getElementById('noManagerMsg').style.display = 'none';
+    document.getElementById('mainForm').style.display = 'none';
+    document.getElementById('managerGate').style.display = 'block';
+    // Reset no manager form
+    var confirmDiv = document.getElementById('noManagerConfirm');
+    var formArea = document.getElementById('noManagerFormArea');
+    if (confirmDiv) confirmDiv.style.display = 'none';
+    if (formArea) formArea.style.display = 'block';
+    var bdmInput = document.getElementById('quick-bdm-name');
+    var storeInput = document.getElementById('quick-store-name');
+    var postcodeInput = document.getElementById('quick-postcode');
+    if (bdmInput) bdmInput.value = '';
+    if (storeInput) storeInput.value = '';
+    if (postcodeInput) postcodeInput.value = '';
+    window.scrollTo(0, 0);
+  }
+
+  // Progress bar
+  function updateProgress() {
+    const form = document.getElementById('visitForm');
+    const inputs = form.querySelectorAll('input[required], select[required]');
+    let filled = 0;
+    inputs.forEach(input => {
+      if (input.type === 'radio') {
+        const group = form.querySelectorAll(`input[name="${input.name}"]`);
+        const checked = [...group].some(r => r.checked);
+        if (checked) filled++;
+      } else if (input.value.trim()) {
+        filled++;
+      }
+    });
+    // Count unique radio groups
+    const radioGroups = new Set([...form.querySelectorAll('input[type="radio"][required]')].map(r => r.name));
+    const total = form.querySelectorAll('input[required]:not([type="radio"])').length + radioGroups.size;
+    const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  document.getElementById('visitForm').addEventListener('input', updateProgress);
+  document.getElementById('visitForm').addEventListener('change', updateProgress);
+
+  // Form submission via Formspree
+  document.getElementById('visitForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const btn = form.querySelector('.submit-btn');
+
+    // Validate required fields
+    let valid = true;
+    const requiredFields = form.querySelectorAll('[required]');
+    const checkedGroups = new Set();
+
+    requiredFields.forEach(field => {
+      if (field.type === 'radio') {
+        if (!checkedGroups.has(field.name)) {
+          checkedGroups.add(field.name);
+          const group = form.querySelectorAll(`input[name="${field.name}"]`);
+          const checked = [...group].some(r => r.checked);
+          if (!checked) valid = false;
+        }
+      } else if (!field.value.trim()) {
+        valid = false;
+      }
+    });
+
+    if (!valid) {
+      btn.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)';
+      btn.textContent = 'PLEASE FILL REQUIRED FIELDS';
+      setTimeout(() => {
+        btn.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> SUBMIT VISIT REPORT`;
+      }, 2000);
+      return;
+    }
+
+    // Build payload for Google Sheets
+    const formData = new FormData(form);
+    const stocked = formData.getAll('stocked[]');
+
+    const payload = {
+      bdm_name: formData.get('bdm_name') || '',
+      bdm_email: formData.get('bdm_email') || '',
+      store_name: formData.get('store_name') || '',
+      postcode: formData.get('postcode') || '',
+      owner_name: formData.get('owner_name') || '',
+      stocked: stocked.length > 0 ? stocked.join(', ') : 'None',
+      cdu_present: formData.get('cdu_present') || '',
+      contracts_signed: formData.get('contracts_signed') || '',
+      teox_interest: formData.get('teox_interest') || '',
+      other_interest: formData.get('other_interest') || '',
+      elonex_status: formData.get('elonex_status') || '',
+      sales_made: formData.get('sales_made') || '',
+      sales_amount: formData.get('sales_amount') || '',
+      followup_required: formData.get('followup_required') || '',
+      followup_notes: formData.get('followup_notes') || '',
+      visit_rating: formData.get('visit_rating') || ''
+    };
+
+    btn.textContent = 'SUBMITTING...';
+    btn.style.opacity = '0.8';
+
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYZhNxmAd6mkLjSqTACzIGOHQgMdEgPcr0jcvI0YRr4ef9Lelgr298f1As3ZEd7g9I/exec';
+
+    // Submit as URL encoded form data
+    try {
+      const formBody = 'payload=' + encodeURIComponent(JSON.stringify(payload));
+      
+      const iframe = document.createElement('iframe');
+      iframe.name = 'submit_iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+
+      const iframeForm = document.createElement('form');
+      iframeForm.method = 'POST';
+      iframeForm.action = SCRIPT_URL;
+      iframeForm.target = 'submit_iframe';
+      iframeForm.style.display = 'none';
+      iframeForm.enctype = 'application/x-www-form-urlencoded';
+
+      const dataInput = document.createElement('input');
+      dataInput.type = 'hidden';
+      dataInput.name = 'payload';
+      dataInput.value = JSON.stringify(payload);
+      iframeForm.appendChild(dataInput);
+
+      document.body.appendChild(iframeForm);
+      iframeForm.submit();
+      
+      setTimeout(() => {
+        document.body.removeChild(iframeForm);
+        document.body.removeChild(iframe);
+      }, 3000);
+    } catch(err) {
+      console.log('Submission error:', err);
+    }
+
+    document.getElementById('progressFill').style.width = '100%';
+    form.style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+  });
+
+  function resetForm() {
+    document.getElementById('visitForm').reset();
+    document.getElementById('visitForm').style.display = 'block';
+    document.getElementById('successScreen').style.display = 'none';
+    document.getElementById('progressFill').style.width = '0%';
+    const btn = document.querySelector('.submit-btn');
+    btn.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+    btn.style.opacity = '1';
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> SUBMIT VISIT REPORT`;
+  }
+</script>
+
+<iframe name="hidden_iframe" style="display:none;"></iframe>
+</body>
+</html>
