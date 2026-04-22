@@ -622,9 +622,17 @@
     <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;">Store Name</div>
     <input id="quick-store-name" type="text" placeholder="Store name" style="width:100%;background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
   </div>
-  <div style="text-align:left;margin-bottom:24px;">
+  <div style="text-align:left;margin-bottom:16px;">
     <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;">Postcode</div>
     <input id="quick-postcode" type="text" placeholder="Store postcode" style="width:100%;background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+  </div>
+  <div style="text-align:left;margin-bottom:16px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;">Notes</div>
+    <textarea id="quick-notes" placeholder="Any notes about this visit..." rows="3" style="width:100%;background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:none;"></textarea>
+  </div>
+  <div style="text-align:left;margin-bottom:24px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px;">Your Email <span style="color:rgba(255,255,255,0.2);font-size:10px;text-transform:none;letter-spacing:0;">(optional — get a copy of this report)</span></div>
+    <input id="quick-email" type="text" placeholder="e.g. rory@neafs.com" style="width:100%;background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
   </div>
   <div id="noManagerFormArea">
     <div style="display:flex;gap:12px;">
@@ -774,6 +782,24 @@
           <div class="section-title">Interest &amp; Opportunities</div>
         </div>
         <div class="field-grid single" style="gap:16px;">
+
+          <div class="field">
+            <label>Do you stock heat not burn products? (e.g. Terea or Levia)</label>
+            <div class="toggle-group">
+              <div class="toggle-item yes">
+                <input type="radio" name="hnb_stock" id="hnb_yes" value="Yes" onchange="document.getElementById('hnb-packs-row').style.display='block'">
+                <label for="hnb_yes">Yes</label>
+              </div>
+              <div class="toggle-item no">
+                <input type="radio" name="hnb_stock" id="hnb_no" value="No" onchange="document.getElementById('hnb-packs-row').style.display='none'">
+                <label for="hnb_no">No</label>
+              </div>
+            </div>
+            <div id="hnb-packs-row" style="display:none;margin-top:14px;">
+              <label style="font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;font-weight:600;display:block;margin-bottom:8px;">How many packs per week do you sell?</label>
+              <input type="number" name="hnb_packs_per_week" id="hnb_packs" min="0" placeholder="Enter number of packs" style="width:100%;background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+            </div>
+          </div>
 
           <div class="field">
             <label>Interested in TEO-X? <span class="required">*</span></label>
@@ -995,7 +1021,7 @@
     if (bdmName && storeName) {
       var payload = {
         bdm_name: bdmName,
-        bdm_email: '',
+        bdm_email: document.getElementById('quick-email') ? document.getElementById('quick-email').value.trim() : '',
         store_name: storeName,
         postcode: postcode,
         owner_name: '',
@@ -1008,7 +1034,7 @@
         sales_made: 'No',
         sales_amount: '',
         followup_required: 'Yes - No manager present',
-        followup_notes: 'Store visited but manager not present',
+        followup_notes: (document.getElementById('quick-notes').value.trim() || 'Store visited but manager not present'),
         visit_rating: ''
       };
       var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYZhNxmAd6mkLjSqTACzIGOHQgMdEgPcr0jcvI0YRr4ef9Lelgr298f1As3ZEd7g9I/exec';
@@ -1058,6 +1084,10 @@
     if (bdmInput) bdmInput.value = '';
     if (storeInput) storeInput.value = '';
     if (postcodeInput) postcodeInput.value = '';
+    var notesInput = document.getElementById('quick-notes');
+    var emailInput = document.getElementById('quick-email');
+    if (notesInput) notesInput.value = '';
+    if (emailInput) emailInput.value = '';
     window.scrollTo(0, 0);
   }
 
